@@ -157,3 +157,139 @@ typescript 语法
 
     用 TypeScript 写 Node.js，则需要引入第三方声明文件
     npm install @types/node --save-dev
+
+进阶
+
+1. 类型别名
+
+    使用 type 创建类型别名
+
+        type Name = string;
+        type NameResolver = () => string;
+        type NameOrResolver = Name | NameResolver;
+        function getName(n: NameOrResolver): Name {
+            if (typeof n === 'string') {
+                return n;
+            }
+            else {
+                return n();
+            }
+        }
+
+2. 字符串字面量类型
+
+    字符串字面量类型用来约束取值只能是某几个字符串中的一个
+
+        type EventNames = 'click' | 'scroll' | 'mousemove';
+        function handleEvent(ele: Element, event: EventNames) {
+            // do something
+        }
+        handleEvent(document.getElementById('hello'), 'scroll');  // 没问题
+        handleEvent(document.getElementById('world'), 'dbclick'); // 报错，event 不能为 'dbclick'
+
+3. 元组
+
+    声明
+
+        let king: [string, number] = ['king', 25];
+        let king: [string, number]
+        king[0] = 'king';
+        king[1] = 25;
+
+    越界的元素 ( 当赋值给越界的元素时，它类型会被限制为元组中每个类型的联合类型 )
+
+        当赋值给越界的元素时，它类型会被限制为元组中每个类型的联合类型
+
+4. 枚举
+
+    enum
+
+        enum Days {Sun, Mon, Tue, Wed, Thu, Fri, Sat};
+
+        // 未手动赋值的枚举项会接着上一个枚举项递增
+        // 如果未手动赋值的枚举项与手动赋值的重复了，TypeScript 是不会察觉到这一点的
+        // 手动赋值的枚举项可以不是数字，此时需要使用类型断言来让tsc无视类型检查
+        手动赋值的枚举项也可以为小数或负数，此时后续未手动赋值的项的递增步长仍为 1
+
+    枚举项有两种类型：常数项（constant member）和计算所得项（computed member）
+
+        enum Color {Red, Green, Blue = "blue".length}
+
+5. 类与接口
+    
+    implements 一个类只能继承自另一个类，有时候不同类之间可以有一些共有的特性，这时候就可以把特性提取成接口（interfaces），用 implements 关键字来实现
+    
+        interface Alarm{
+            ...
+        }
+        interface Light{
+
+        }
+        class Car2 implements Alarm, Light {
+            alert() {
+                console.log('Car alert');
+            }
+            lightOn() {
+                console.log('Car light on');
+            }
+            lightOff() {
+                console.log('Car light off');
+            }
+        }
+    
+    接口继承
+
+        interface LightableAlarm extends Alarm {
+            lightOn();
+            lightOff();
+        }
+
+    接口继承类
+
+6. 泛型
+
+    泛型（Generics）是指在定义函数、接口或类的时候，不预先指定具体的类型，而在使用的时候再指定类型的一种特性。
+
+        function createArray<T>(length: number, value: T): Array<T> {
+            let result = [];
+            for (let i = 0; i < length; i++) {
+                result[i] = value;
+            }
+            return result;
+        }
+        createArray<string>(3, 'x'); // ['x', 'x', 'x']
+
+    多个泛型参数
+
+        function swap<T, U>(tuple: [T, U]): [U, T] {
+            return [tuple[1], tuple[0]];
+        }
+        swap([7, 'seven']); // ['seven', 7]
+
+7. 声明合并
+
+    函数的合并 ( 重载 )
+
+        function reverse(x: number): number;
+        function reverse(x: string): string;
+        function reverse(x: number | string): number | string {
+            if (typeof x === 'number') {
+                return Number(x.toString().split('').reverse().join(''));
+            } else if (typeof x === 'string') {
+                return x.split('').reverse().join('');
+            }
+        }
+
+    接口的合并 ( 合并的属性的类型必须是唯一的 )
+
+        interface Alarm {
+            price: number;
+        }
+        interface Alarm {
+            weight: number;
+        }
+
+        interface Alarm {
+            price: number;
+            weight: number;
+        }
